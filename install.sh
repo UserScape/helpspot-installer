@@ -55,8 +55,8 @@ machine_type () {
 
 pkg_manager () {
     set +e
-    YUM=$(which yum)
-    APT=$(which apt-get)
+    YUM=$(which yum 2> /dev/null)
+    APT=$(which apt-get 2> /dev/null)
     set -e
 
     if [ -z "$YUM" ]; then
@@ -84,7 +84,7 @@ php_location () {
         PHPDIR="/etc/php5/mods-available"
     else
         echo "WARNING: Cannot find PHP directory"
-        echo "In what directory are php INI files located?"
+        printf "\nIn what directory are php INI files located? >"
         read PHPDIR
     fi
 }
@@ -99,7 +99,8 @@ php_location () {
 #
 ######################################################################
 
-LICENSEPATH="./license.txt"
+SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+LICENSEPATH="$SCRIPTDIR/license.txt"
 
 # getopt is NOT macintosh-friendly
 OPTS=`getopt -o l: -l license: -- "$@"`
@@ -198,15 +199,15 @@ if [ $IONCUBE_INSTALLED = "no" ]; then
         exit 1
     fi
 
-    # Cleanup ioncube files
-    rm ./ioncube.tar.gz
-    rm -r ./ioncube
-
     ###
     ### COPY TO PHP INI DIR & CREATE .INI FILE
     ###
     cp ./ioncube/ioncube_loader_lin_$PHPVERSION.so $PHPDIR/ioncube_loader_lin_$PHPVERSION.so
     echo "zend_extension=$PHPDIR/ioncube_loader_lin_$PHPVERSION.so" > $PHPDIR/00-ioncube.ini
+
+    # Cleanup ioncube files
+    rm ./ioncube.tar.gz
+    rm -r ./ioncube
 
     ###
     ### SYMLINK .INI FILE AS REQUIRED ON DEBIAN/UBUNTU
@@ -222,12 +223,38 @@ if [ $IONCUBE_INSTALLED = "no" ]; then
     if [ -d "/etc/php5/fpm/conf.d" ]; then
         # debian/ubuntu
         ln -s $PHPDIR/00-ioncube.ini /etc/php5/fpm/conf.d/00-ioncube.ini
+        # Restart php-fpm
+        service php5-fpm restart
     fi
 
     # If apache mod-php is used
     if [ -d "/etc/php5/apache2/conf.d" ]; then
         # debian/ubuntu
         ln -s $PHPDIR/00-ioncube.ini /etc/php5/fpm/conf.d/00-ioncube.ini
+        # Restart apache2
+        service apache2 restart
+    fi
+
+    ###
+    ### RESTART SERVICES on CENTOS/REDHAT
+    ###
+
+    # Restart Apache, if installed
+    set +e
+    APACHECTL=$(which apachectl 2> /dev/null)
+    set -e
+
+    if [ ! -z "$APACHECTL" ]; then
+        $APACHECTL restart
+    fi
+
+    # Restart PHP-FPM, if installed
+    set +e
+    PHPFPM=$(which php-fpm 2> /dev/null)
+    set -e
+
+    if [ ! -z "$PHPFPM" ]; then
+        service php-fpm restart
     fi
 else
     echo "IonCube installed already, moving on..."
@@ -255,7 +282,7 @@ curl -s -o ./helpspot.tar.gz https://s3.amazonaws.com/helpspot-downloads/$HSVERS
 ###
 ### DETERMINE HELPSPOT INSTALL LOCATION
 ###
-echo "Where should HelpSpot be installed?"
+printf "Where should HelpSpot be installed? >"
 read INSTALLPATH
 
 ### Create dir if not exists, permissions (user www-data, httpd)
@@ -331,20 +358,20 @@ EOF
 ###
 echo "We need some information to configure HelpSpot:"
 
-printf "\nDatabase Host (e.g. localhost):"
+printf "\nDatabase Host (e.g. localhost) >"
 read DB_HOST
 
-printf "\nDatabase User:"
+printf "\nDatabase User >"
 read DB_USER
 
-printf "\nDatabase Password (will be hidden):"
-read -s DB_PASS
+printf "\nDatabase Password >"
+read DB_PASS
 
-printf "\n\nDatabase Name:"
+printf "\nDatabase Name >"
 read DB_NAME
 
 printf "\nHelpSpot URL (e.g. http://example.com/helpspot - no trailing slash)"
-printf "\nUse the full URL you will use in a browser:"
+printf "\nUse the full URL you will use in a browser >"
 read DB_URL
 
 # Find and Replace template variables
