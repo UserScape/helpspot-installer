@@ -22,6 +22,102 @@ set -e
 
 ######################################################################
 #
+# UTILITY FUNCTIONS
+#
+######################################################################
+
+php_binary () {
+    # Don't bail out when
+    # one of these comands fails
+    set +e
+    PHPCLI=$(which php-cli 2> /dev/null)
+    PHPBINARY=$(which php 2> /dev/null)
+    set -e
+
+    if [ ! -z "$PHPCLI" ]; then
+      PHPBINARY="$PHPCLI"
+    fi
+}
+
+php_version () {
+    # 5.4, 5.5, 5.6
+    PHPVERSION=$($PHPBINARY -v | sed -n 1p | awk '{print $2}' | cut -c1-3)
+}
+
+hs_version () {
+    HSVERSION=$(curl -s https://store.helpspot.com/latest-release)
+}
+
+
+machine_type () {
+    MACHINE_TYPE=`uname -m`
+}
+
+pkg_manager () {
+    set +e
+    YUM=$(which yum)
+    APT=$(which apt-get)
+    set -e
+
+    if [ -z "$YUM" ]; then
+      # APT PRESENT
+      INSTALLER="$APT"
+    else
+      # YUM PRESENT
+      INSTALLER="$YUM"
+    fi
+}
+
+php_location () {
+    # Get a php-ini location file
+    ##INIFILE=$($PHPBINARY --ini | tail -n 2 | sed -n 1p)
+    # /etc/php.d on redhat/centos
+    # /etc/php/7.0/[cli|fpm|apache2] on debian/ubuntu <-- helpspot doesn't work on php 7 yet
+    # /etc/php5/[cli|fpm|apache2] on debian/ubuntu
+    ##PHPDIR=$(dirname "${INIFILE}")
+
+    if [ -d "/etc/php.d" ]; then
+        # centos/redhat
+        PHPDIR="/etc/php.d"
+    elif [ -d "/etc/php5/mods-available" ]; then
+        # debian/ubuntu
+        PHPDIR="/etc/php5/mods-available"
+    else
+        echo "WARNING: Cannot find PHP directory"
+        echo "In what directory are php INI files located?"
+        read PHPDIR
+    fi
+}
+
+
+
+
+
+######################################################################
+#
+# Options
+#
+######################################################################
+
+LICENSEPATH="./license.txt"
+
+# getopt is NOT macintosh-friendly
+OPTS=`getopt -o l: -l license: -- "$@"`
+eval set -- "$OPTS"
+while true ; do
+    case "$1" in
+        -l|--license)
+            LICENSEPATH=$2
+            shift 2
+            ;;
+        --) shift; break;;
+    esac
+done
+
+
+
+######################################################################
+#
 # Announce ourselves, with aplomb
 #
 ######################################################################
@@ -43,6 +139,7 @@ echo "             |_|        |_|              "
 #
 ######################################################################
 echo "Preparing Installation..."
+
 php_binary
 php_version
 hs_version
@@ -76,7 +173,7 @@ echo "Checking for IonCube Loader..."
 
 IONCUBE_INSTALLED=$(php -r "if( extension_loaded('IonCube Loader') ) { echo 'yes'; } else { echo 'no'; };")
 
-if [ "$IONCUBE_INSTALLED" -eq "no" ]; then
+if [ $IONCUBE_INSTALLED = "no" ]; then
     echo "Installing IonCube Loader..."
 
 
@@ -100,6 +197,10 @@ if [ "$IONCUBE_INSTALLED" -eq "no" ]; then
         >&2 echo "WARNING: Cannot match PHP version to correct IonCube Loader"
         exit 1
     fi
+
+    # Cleanup ioncube files
+    rm ./ioncube.tar.gz
+    rm -r ./ioncube
 
     ###
     ### COPY TO PHP INI DIR & CREATE .INI FILE
@@ -142,7 +243,6 @@ fi
 #
 ######################################################################
 
-
 ###
 ### DOWNLOAD LATEST HELPSPOT
 ###
@@ -167,8 +267,9 @@ fi
 ### EXTRACT TO INSTALL DIR & SET PERMISSIONS
 ###
 
-# Extract
+# Extract and delete tar file
 tar -xf ./helpspot.tar.gz -C $INSTALLPATH
+rm ./helpspot.tar.gz
 
 # Move helpspot files out of install sub-dir to helpspot install dir
 mv $INSTALLPATH/helpspot_$HSVERSION/* $INSTALLPATH/
@@ -191,7 +292,9 @@ chmod guo+x $INSTALLPATH/hs
 #
 ######################################################################
 
-# Template String for Config.php
+###
+### TEMPLATE STRING FOR config.php
+###
 ! read -d '' CONFIGTEMPLATE << EOF
 <?php
 /**
@@ -223,6 +326,9 @@ define('cDEBUG',      false);
 ?>
 EOF
 
+###
+### PROMPT FOR TEMPLATE VARIABLES
+###
 echo "We need some information to configure HelpSpot:"
 
 printf "\nDatabase Host (e.g. localhost):"
@@ -264,8 +370,11 @@ echo "$CONFIG" > $INSTALLPATH/config.php
 #
 ######################################################################
 
+###
+### INSTALL HELPSPOT
+###
 cd $INSTALLPATH
-php hs install --license-file="some-file-path??"
+php hs install --license-file="$LICENSEPATH"
 
 
 
@@ -284,71 +393,4 @@ php hs install --license-file="some-file-path??"
 ### Move to /etc/sphinx[search]/sphinx.conf
 ### Setup cron tasks for indexing
 ### Run indexer (hide output)
-
-
-
-
-
-######################################################################
-#
-# UTILITY FUNCTIONS
-#
-######################################################################
-
-php_binary () {
-    PHPCLI=$(which php-cli 2> /dev/null)
-    PHPBINARY=$(which php 2> /dev/null)
-
-    if [ ! -z "$PHPCLI" ]; then
-      PHPBINARY="$PHPCLI"
-    fi
-}
-
-php_version () {
-    # 5.4, 5.5, 5.6
-    PHPVERSION=$($PHPBINARY -v | sed -n 1p | awk '{print $2}' | cut -c1-3)
-}
-
-hs_version () {
-    HSVERSION=$(curl -s https://store.helpspot.com/latest-release)
-}
-
-
-machine_type () {
-    MACHINE_TYPE=`uname -m`
-}
-
-pkg_manager () {
-    YUM=$(which yum)
-    APT=$(which apt-get)
-
-    if [ -z "$YUM" ]; then
-      # APT PRESENT
-      INSTALLER="$APT"
-    else
-      # YUM PRESENT
-      INSTALLER="$YUM"
-    fi
-}
-
-php_location () {
-    # Get a php-ini location file
-    ##INIFILE=$($PHPBINARY --ini | tail -n 2 | sed -n 1p)
-    # /etc/php.d on redhat/centos
-    # /etc/php/7.0/[cli|fpm|apache2] on debian/ubuntu <-- helpspot doesn't work on php 7 yet
-    # /etc/php5/[cli|fpm|apache2] on debian/ubuntu
-    ##PHPDIR=$(dirname "${INIFILE}")
-
-    if [ -d "/etc/php.d" ]; then
-        # centos/redhat
-        PHPDIR="/etc/php.d"
-    elif [ -d "/etc/php5/mods-available" ]; then
-        # debian/ubuntu
-        PHPDIR="/etc/php5/mods-available"
-    else
-        echo "WARNING: Cannot find PHP directory"
-        echo "In what directory are php INI files located?"
-        read PHPDIR
-    fi
-}
 
