@@ -191,6 +191,69 @@ chmod guo+x $INSTALLPATH/hs
 #
 ######################################################################
 
+# Template String for Config.php
+! read -d '' CONFIGTEMPLATE << EOF
+<?php
+/**
+ * Database Credentials
+ */
+define('cDBTYPE',      'mysql');
+define('cDBHOSTNAME',  '{{DB_HOST}}');
+define('cDBUSERNAME',  '{{DB_USER}}');
+define('cDBPASSWORD',  '{{DB_PASS}}');
+define('cDBNAME',      '{{DB_NAME}}');
+
+define('cDBCHARSET',   'utf8mb4');
+define('cDBCOLLATION', 'utf8mb4_unicode_ci');
+
+/**
+ * SphinxSearch Search Engine
+ */
+define('cSEARCHHOST', '127.0.0.1');
+define('cSEARCHPORT', '9306');
+
+/**
+ * General
+ */
+define('cHOST','{{DB_URL}}');
+
+define('cBASEPATH',   dirname(__FILE__));
+define('cDATADIR',    cBASEPATH.'/data');
+define('cDEBUG',      false);
+?>
+EOF
+
+echo "We need some information to configure HelpSpot:"
+
+printf "\nDatabase Host (e.g. localhost):"
+read DB_HOST
+
+printf "\nDatabase User:"
+read DB_USER
+
+printf "\nDatabase Password (will be hidden):"
+read -s DB_PASS
+
+printf "\n\nDatabase Name:"
+read DB_NAME
+
+printf "\nHelpSpot URL (e.g. http://example.com/helpspot - no trailing slash)"
+printf "\nUse the full URL you will use in a browser:"
+read DB_URL
+
+# Find and Replace template variables
+# Strange quoting used so can use "$"character in password
+CONFIG=$(sed -e 's@{{DB_HOST}}@'$DB_HOST'@' \
+             -e 's@{{DB_USER}}@'$DB_USER'@' \
+             -e 's@{{DB_PASS}}@'"$DB_PASS"'@' \
+             -e 's@{{DB_NAME}}@'$DB_NAME'@' \
+             -e 's@{{DB_URL}}@'$DB_URL'@' \
+         <<< "$CONFIGTEMPLATE")
+
+# Create config.php
+# Double quotes needed to preserve line breaks
+echo "$CONFIG" > $INSTALLPATH/config.php
+
 
 
 
@@ -201,8 +264,9 @@ chmod guo+x $INSTALLPATH/hs
 #
 ######################################################################
 
-## php hs install
-### Allow this to [prompt]
+cd $INSTALLPATH
+php hs install --license-file="some-file-path??"
+
 
 
 
