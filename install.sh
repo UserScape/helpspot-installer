@@ -110,16 +110,19 @@ if [ "$IONCUBE_INSTALLED" -eq "no" ]; then
     ###
     ### SYMLINK .INI FILE AS REQUIRED ON DEBIAN/UBUNTU
     ###
+
     # CLI probably always exists
     if [ -d "/etc/php5/cli/conf.d" ]; then
         # debian/ubuntu
         ln -s $PHPDIR/00-ioncube.ini /etc/php5/cli/conf.d/00-ioncube.ini
     fi
+
     # If php-fpm is used
     if [ -d "/etc/php5/fpm/conf.d" ]; then
         # debian/ubuntu
         ln -s $PHPDIR/00-ioncube.ini /etc/php5/fpm/conf.d/00-ioncube.ini
     fi
+
     # If apache mod-php is used
     if [ -d "/etc/php5/apache2/conf.d" ]; then
         # debian/ubuntu
@@ -163,12 +166,16 @@ fi
 ###
 ### EXTRACT TO INSTALL DIR & SET PERMISSIONS
 ###
+
 # Extract
 tar -xf ./helpspot.tar.gz -C $INSTALLPATH
+
 # Move helpspot files out of install sub-dir to helpspot install dir
 mv $INSTALLPATH/helpspot_$HSVERSION/* $INSTALLPATH/
+
 # Delete empty sub-dir directory
 rm -r $INSTALLPATH/helpspot_$HSVERSION
+
 # Set Permissions
 find $INSTALLPATH/ -type f -exec chmod 664 {} +
 find $INSTALLPATH/ -type d -exec chmod 755 {} +
