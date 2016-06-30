@@ -62,9 +62,13 @@ pkg_manager () {
     if [ -z "$YUM" ]; then
       # APT PRESENT
       INSTALLER="$APT"
+      echo "Installing lsb_release command"
+      $INSTALLER install -y lsb-core &> /dev/null
     else
       # YUM PRESENT
       INSTALLER="$YUM"
+      echo "Installing lsb_release command"
+      $INSTALLER install -y redhat-lsb-core &> /dev/null
     fi
 }
 
@@ -413,11 +417,236 @@ php hs install --license-file="$LICENSEPATH"
 #
 ######################################################################
 
-## SphinxSearch
-### Download (latest?) version
-### Adjust init if required
-### php hs search:config
-### Move to /etc/sphinx[search]/sphinx.conf
-### Setup cron tasks for indexing
-### Run indexer (hide output)
+echo "Installing & Configuring SphinxSearch"
 
+###
+### CREATE SPHINX CONFIG FILE
+###
+cd $INSTALLPATH
+php hs search:config
+
+###
+### DOWNLOAD SPHINX
+###
+
+# Ubuntu
+# 12.04 x64 http://sphinxsearch.com/files/sphinxsearch_2.2.10-release-0ubuntu12~precise_amd64.deb
+# 12.04 x32 http://sphinxsearch.com/files/sphinxsearch_2.2.10-release-0ubuntu12~precise_i386.deb
+# 14.04 x64 http://sphinxsearch.com/files/sphinxsearch_2.2.10-release-0ubuntu12~trusty_amd64.deb
+# 14.04 x32 http://sphinxsearch.com/files/sphinxsearch_2.2.10-release-0ubuntu12~trusty_i386.deb
+
+# Debian
+# 6 x86 http://sphinxsearch.com/files/sphinxsearch_2.2.10-release-1_amd64.deb
+# 6 x32 http://sphinxsearch.com/files/sphinxsearch_2.2.10-release-1_i386.deb
+# 7 x85 http://sphinxsearch.com/files/sphinxsearch_2.2.10-release-1~wheezy_amd64.deb
+# 7 x32 http://sphinxsearch.com/files/sphinxsearch_2.2.10-release-1~wheezy_i386.deb
+# 8 x86 http://sphinxsearch.com/files/sphinxsearch_2.2.10-release-1~jessie_amd64.deb
+# 8 x32 http://sphinxsearch.com/files/sphinxsearch_2.2.10-release-1~jessie_i386.deb
+
+# CentOS/RedHat/AmazonAMI
+# 5 x86 http://sphinxsearch.com/files/sphinx-2.2.10-1.rhel5.x86_64.rpm
+# 5 x32 http://sphinxsearch.com/files/sphinx-2.2.10-1.rhel5.i386.rpm
+# 6 x86 http://sphinxsearch.com/files/sphinx-2.2.10-1.rhel6.x86_64.rpm
+# 6 x32 http://sphinxsearch.com/files/sphinx-2.2.10-1.rhel6.i386.rpm
+# 7 x86 http://sphinxsearch.com/files/sphinx-2.2.10-1.rhel7.x86_64.rpm
+# 7 x32 <none>
+
+
+# OS [Debian, Ubuntu, CentOS, RedHatEnterpriseServer, AmazonAMI]
+OS=$(lsb_release -i | awk -F ':' '{print $2}' | awk '{print $1}')
+
+# major version ["deb": [12, 14, 6, 7, 8], "rpm": [6, 7, 2016]]
+MAJORVERSION=$(lsb_release -r | awk '{print $2}' | awk -F '.' '{print $1}')
+
+set +e
+SPHINXURL=$(python -c "urls={
+    'Ubuntu':{
+        '12':{
+            'x86_64': 'http://sphinxsearch.com/files/sphinxsearch_2.2.10-release-0ubuntu12~precise_amd64.deb',
+            'i386': 'http://sphinxsearch.com/files/sphinxsearch_2.2.10-release-0ubuntu12~precise_i386.deb'
+        },
+        '14':{
+            'x86_64': 'http://sphinxsearch.com/files/sphinxsearch_2.2.10-release-0ubuntu12~trusty_amd64.deb',
+            'i386': 'http://sphinxsearch.com/files/sphinxsearch_2.2.10-release-0ubuntu12~trusty_i386.deb'
+        }
+    },
+    'Debian': {
+        '6': {
+            'x86_64': 'http://sphinxsearch.com/files/sphinxsearch_2.2.10-release-1_amd64.deb',
+            'i386': 'http://sphinxsearch.com/files/sphinxsearch_2.2.10-release-1_i386.deb'
+        },
+        '7': {
+            'x86_64': 'http://sphinxsearch.com/files/sphinxsearch_2.2.10-release-1~wheezy_amd64.deb',
+            'i386': 'http://sphinxsearch.com/files/sphinxsearch_2.2.10-release-1~wheezy_i386.deb'
+        },
+        '8': {
+            'x86_64': 'http://sphinxsearch.com/files/sphinxsearch_2.2.10-release-1~jessie_amd64.deb',
+            'i386': 'http://sphinxsearch.com/files/sphinxsearch_2.2.10-release-1~jessie_i386.deb'
+        },
+    },
+    'CentOS': {
+        '5': {
+            'x86_64': 'http://sphinxsearch.com/files/sphinx-2.2.10-1.rhel5.x86_64.rpm',
+            'i386': 'http://sphinxsearch.com/files/sphinx-2.2.10-1.rhel5.i386.rpm'
+        },
+        '6': {
+            'x86_64': 'http://sphinxsearch.com/files/sphinx-2.2.10-1.rhel6.x86_64.rpm',
+            'i386': 'http://sphinxsearch.com/files/sphinx-2.2.10-1.rhel6.i386.rpm'
+        },
+        '7': {
+            'x86_64': 'http://sphinxsearch.com/files/sphinx-2.2.10-1.rhel7.x86_64.rpm'
+        }
+    },
+    'RedHatEnterpriseServer': {
+        '5': {
+            'x86_64': 'http://sphinxsearch.com/files/sphinx-2.2.10-1.rhel5.x86_64.rpm',
+            'i386': 'http://sphinxsearch.com/files/sphinx-2.2.10-1.rhel5.i386.rpm'
+        },
+        '6': {
+            'x86_64': 'http://sphinxsearch.com/files/sphinx-2.2.10-1.rhel6.x86_64.rpm',
+            'i386': 'http://sphinxsearch.com/files/sphinx-2.2.10-1.rhel6.i386.rpm'
+        },
+        '7': {
+            'x86_64': 'http://sphinxsearch.com/files/sphinx-2.2.10-1.rhel7.x86_64.rpm'
+        }
+    },
+    'AmazonAMI': {
+        '2016': {
+            'x86_64': 'http://sphinxsearch.com/files/sphinx-2.2.10-1.rhel6.x86_64.rpm',
+            'i386': 'http://sphinxsearch.com/files/sphinx-2.2.10-1.rhel6.i386.rpm'
+        }
+    },
+};
+try:
+    print urls['$OS']['$MAJORVERSION']['$MACHINE_TYPE']
+except KeyError:
+    exit(1)
+")
+SPHINX_RESULT=$?
+set -e
+
+if [ $SPHINX_RESULT -eq 1 ]; then
+    echo "No SphinxSearch package for this server could be found."
+    exit 1
+fi
+
+# Download Package
+SPHINXPKGNAME=$(basename $SPHINXURL)
+curl -s -o "./$SPHINXPKGNAME" "$SPHINXURL"
+
+
+###
+### INSTALL SPHINX
+###
+
+if [ -z "$YUM" ]; then
+    # APT PRESENT
+    # Install
+    apt-get install -y gdebi-core &> /dev/null
+    gdebi -nq "./$SPHINXPKGNAME"
+
+    # Stop the service
+    service sphinxsearch stop &> /dev/null
+
+    # Set our config file
+    mv /etc/sphinxsearch/sphinx.conf /etc/sphinxsearch/sphinx-orig.conf
+    cp $INSTALLPATH/data/sphinx.conf /etc/sphinxsearch/sphinx.conf
+else
+    # YUM PRESENT
+    yum install -y "./$SPHINXPKGNAME"
+
+    # Systemd not used, so we use this
+    chkconfig searchd on  &> /dev/null
+    # Unnecessary
+    service searchd stop  &> /dev/null
+
+    # Set our config file
+    mv /etc/sphinx/sphinx.conf /etc/sphinx/sphinx-orig.conf
+    cp $INSTALLPATH/data/sphinx.conf /etc/sphinx/sphinx.conf
+fi
+
+echo "Indexing Sphinx"
+indexer --all &> /dev/null
+
+
+# Create data dir for sphinx
+# on YUM based systems
+if [ -z "$YUM" ]; then
+    # APT PRESENT
+else
+    # YUM PRESEMT
+    mkdir -p /var/lib/sphinx/data
+    chown sphinx:sphinx /var/lib/sphinx/data
+fi
+
+
+###
+### CONFIGURE TMPFS
+###
+if [ -d /usr/lib/tmpfiles.d ] && [ ! -f /usr/lib/tmpfiles.d/searchd.conf ]; then
+    echo "d /var/run/sphinx 0755 sphinx sphinx -" | tee /usr/lib/tmpfiles.d/searchd.conf &> /dev/null
+    chown root:root /usr/lib/tmpfiles.d/searchd.conf
+fi
+
+
+###
+### CONFIGURE SELINUX
+###
+
+# Adjust SELinux if enforcing
+# May also be Permissive, but we only care about "Enforcing"
+ENFORCING="Disabled"
+
+set +e
+HASSELINUX=$(which getenforce 2> /dev/null)
+set -e
+
+if [ ! -z "$HASSELINUX" ]; then
+    ENFORCING=$(getenforce)
+fi
+
+if [ $ENFORCING = "Enforcing" ]; then
+    # Set our data dir to proper SELinux permissions
+    chcon --user=system_u --role=object_r --type=var_lib_t /var/lib/sphinx/data
+    # Enable httpd to connect to network, needed for sphinxsearch
+    # since it's connected to over MySQL network protocol
+    setsebool -P httpd_can_network_connect on
+fi
+
+if [ $ENFORCING = "Enforcing" ] && [ -f /usr/lib/tmpfiles.d/searchd.conf ]; then
+    # If exists and Enforcing
+    # Ensure tmpfs file has correct SELinux
+    chcon --user=system_u --role=object_r --type=lib_t /usr/lib/tmpfiles.d/searchd.conf
+
+    # CRON TASKS: system_u:object_r:system_cron_spool_t:
+fi
+
+
+###
+### Setup Cron Tasks
+###
+
+echo "Setting SphinxSearch CRON Tasks"
+
+echo "0 0 * * * root indexer --all --rotate" > /etc/cron.d/sphinx
+echo "0 */6 * * * root indexer forums_ndx knowledgebooks_ndx --rotate" > /etc/cron.d/sphinx
+
+# Template for delta indeces
+! read -d '' DELTATEMPLATE << EOF
+#! /usr/bin/env bash
+
+indexer requests_history_ndx_delta --rotate
+indexer --merge requests_history_ndx requests_history_ndx_delta --rotate
+indexer requests_ndx_delta --rotate
+indexer --merge requests_ndx requests_ndx_delta --rotate
+EOF
+
+mkdir -p /opt/sphinx
+echo "$DELTATEMPLATE" > /opt/sphinx/delta_index.sh
+chmod +x /opt/sphinx/delta_index.sh
+echo "0/10 * * * * root /opt/sphinx/delta_index.sh" > /etc/cron.d/sphinx
+
+if [ $ENFORCING = "Enforcing" ]; then
+    # Set our data dir to proper SELinux permissions
+    chcon --user=system_u --role=system_cron_spool_t --type=var_lib_t /etc/cron.d/sphinx
+fi
