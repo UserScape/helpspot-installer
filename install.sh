@@ -650,3 +650,7 @@ if [ $ENFORCING = "Enforcing" ]; then
     # Set our data dir to proper SELinux permissions
     chcon --user=system_u --role=system_cron_spool_t --type=var_lib_t /etc/cron.d/sphinx
 fi
+
+
+echo "Installation Complete!"
+echo "You can reach your HelpSpot installation at $DB_URL"
