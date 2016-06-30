@@ -423,7 +423,15 @@ echo "Installing & Configuring SphinxSearch"
 ### CREATE SPHINX CONFIG FILE
 ###
 cd $INSTALLPATH
-php hs search:config
+
+# These segfault on amzn linux
+if [ -z "$YUM" ]; then
+    # APT PRESENT
+    php hs search:config --debian
+else
+    # YUM PRESENT
+    php hs search:config --redhat
+fi
 
 ###
 ### DOWNLOAD SPHINX
@@ -553,7 +561,7 @@ if [ -z "$YUM" ]; then
     cp $INSTALLPATH/data/sphinx.conf /etc/sphinxsearch/sphinx.conf
 else
     # YUM PRESENT
-    yum install -y "./$SPHINXPKGNAME"
+    yum install -y "./$SPHINXPKGNAME" &> /dev/null
 
     # Systemd not used, so we use this
     chkconfig searchd on  &> /dev/null
@@ -563,21 +571,14 @@ else
     # Set our config file
     mv /etc/sphinx/sphinx.conf /etc/sphinx/sphinx-orig.conf
     cp $INSTALLPATH/data/sphinx.conf /etc/sphinx/sphinx.conf
-fi
 
-echo "Indexing Sphinx"
-indexer --all &> /dev/null
-
-
-# Create data dir for sphinx
-# on YUM based systems
-if [ -z "$YUM" ]; then
-    # APT PRESENT
-else
-    # YUM PRESEMT
     mkdir -p /var/lib/sphinx/data
     chown sphinx:sphinx /var/lib/sphinx/data
 fi
+
+
+echo "Indexing Sphinx"
+indexer --all &> /dev/null
 
 
 ###
@@ -648,7 +649,7 @@ echo "0/10 * * * * root /opt/sphinx/delta_index.sh" > /etc/cron.d/sphinx
 
 if [ $ENFORCING = "Enforcing" ]; then
     # Set our data dir to proper SELinux permissions
-    chcon --user=system_u --role=system_cron_spool_t --type=var_lib_t /etc/cron.d/sphinx
+    chcon --user=system_u --role=object_r --type=system_cron_spool_t /etc/cron.d/sphinx
 fi
 
 
