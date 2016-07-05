@@ -2,7 +2,7 @@
 
 <h1 style="line-height:62px;"><img src="https://www.helpspot.com/img/logo.png" alt="HelpSpot logo" height="62" width="171" style="float: left; margin-right: 20px;"> Installer</h1>
 
-An installation script for Linux servers.
+An installation script for GNU/Linux servers.
 
 Tested on:
 
