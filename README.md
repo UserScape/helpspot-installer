@@ -36,7 +36,7 @@ sudo bash install.sh --license=/tmp/license.txt
 This will prompt for:
 
 1. Where to install HelpSpot (e.g. `/var/www/helpspot`)
-2. Database information (configured HelpSpot's `config.php` file)
+2. Database information (to configure HelpSpot's `config.php` file)
 3. HelpSpot install details, including 
     - admin user information
     - HelpSpot Customer ID
