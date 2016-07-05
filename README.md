@@ -11,6 +11,13 @@ Tested on:
 3. Debian 8
 4. Ubuntu 14.04
 
+<!--
+Notes:
+
+RedHat/CentOS 6 fairly common, but they need php 5.4 and mysql 5.5 minimum.
+That will need documentation to note that.
+-->
+
 ## How to Use:
 
 Here's how to use this script.
