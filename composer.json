@@ -1,0 +1,13 @@
+{
+    "name": "userscape/helpspot-installer",
+    "description": "Install script for HelpSpot",
+    "authors": [
+        {
+            "name": "Ian Landsman",
+            "email": "ian@userscape.com"
+        }
+    ],
+    "require": {
+        "michelf/php-markdown": "^1.6"
+    }
+}

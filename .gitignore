@@ -1,3 +1,5 @@
 .vagrant
 Vagrantfile
 license.txt
+
+/vendor/
