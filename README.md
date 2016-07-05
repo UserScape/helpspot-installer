@@ -1,42 +1,49 @@
 # helpspot-installer
+
 Customer Installer for HelpSpot
 
+## How to Use:
+
+### Prep:
+
+1. Server must have a web server and php 5.4+ installed prior to running the instsallation script.
+    - Scripts provided `server_deb.sh` and `server_rpm.sh` can help setup a FRESH (new) server for Debian/Ubuntu or RedHat/CentOS servers
+2. HelpSpot license file much be present on the server file system. Usually named `license.txt`.
+3. Create a database in MySQL with the following statement (adjust the database name as needed):
+
+```sql
+CREATE DATABASE IF NOT EXISTS helpspot_db 
+       CHARSET utf8mb4 COLLATE utf8mb4_unicode_ci;
+```
+
+> You may wish to create a user specifically for HelpSpot as well.
+
+### Install:
+
+Once the `install.sh` script is present on the web server, you can begin the installation process:
+
+```bash
+# Requires root or sudo user to run
+
+# This installs license.txt is alongside install.sh,
+#   within the same directory
+sudo bash install.sh
+
+# Or we can define the license file location
+sudo bash install.sh --license=/tmp/license.txt
+```
+
+This will prompt for:
+
+1. Where to install HelpSpot (e.g. `/var/www/helpspot`)
+2. Database information (configured HelpSpot's `config.php` file)
+3. HelpSpot install details, including 
+    - admin user information
+    - HelpSpot Customer ID
+    - Timezone (Includes auto-complete, but you can also [find valid timezones here](http://php.net/manual/en/timezones.php))
+
 ## TO DO:
-
-Baseline:
-
-* Cleanup function
-    - excess files
-    - cleanup on error
-* Create config.php (prompt for database info)
-* `php hs install`
-* Will license be included? (prompt for path if not exists)
-* install/configure sphinxsearch
 
 Security:
 
 Set location to get md5 hash of shell script to verify location if install directions end up being `curl [our cript url] | sudo bash`.
-
-## OS Parsing
-
-```
-# See also: http://unix.stackexchange.com/questions/6345/how-can-i-get-distribution-name-and-version-number-in-a-simple-shell-script
-
-
-# centos / redhat
-cat /etc/redhat-release
-> CentOS release 6.7 (Final)
-> Red Hat Enterprise Linux Server release 7.2 (Maipo)
-> Red Hat Enterprise Linux Server release 6.5 (Santiago)
-
-# amzn linux
-cat /etc/system-release
-> Amazon Linux AMI release 2016.03
-
-# debian/ubuntu
-cat /etc/lsb-release [-r for release]
-> Distributor ID: Ubuntu
-> Description:    Ubuntu 14.04.2 LTS
-> Release:    14.04
-> Codename:   trusty
-```
