@@ -63,12 +63,12 @@ pkg_manager () {
       # APT PRESENT
       INSTALLER="$APT"
       echo "Installing lsb_release command"
-      $INSTALLER install -y lsb-core &> /dev/null
+      $INSTALLER install -y curl lsb-core &> /dev/null
     else
       # YUM PRESENT
       INSTALLER="$YUM"
       echo "Installing lsb_release command"
-      $INSTALLER install -y redhat-lsb-core &> /dev/null
+      $INSTALLER install -y curl redhat-lsb-core &> /dev/null
     fi
 }
 
@@ -228,7 +228,7 @@ if [ $IONCUBE_INSTALLED = "no" ]; then
         # debian/ubuntu
         ln -s $PHPDIR/00-ioncube.ini /etc/php5/fpm/conf.d/00-ioncube.ini
         # Restart php-fpm
-        service php5-fpm restart
+        service php5-fpm restart &> /dev/null
     fi
 
     # If apache mod-php is used
@@ -236,7 +236,7 @@ if [ $IONCUBE_INSTALLED = "no" ]; then
         # debian/ubuntu
         ln -s $PHPDIR/00-ioncube.ini /etc/php5/fpm/conf.d/00-ioncube.ini
         # Restart apache2
-        service apache2 restart
+        service apache2 restart &> /dev/null
     fi
 
     ###
@@ -249,7 +249,7 @@ if [ $IONCUBE_INSTALLED = "no" ]; then
     set -e
 
     if [ ! -z "$APACHECTL" ]; then
-        $APACHECTL restart
+        $APACHECTL restart &> /dev/null
     fi
 
     # Restart PHP-FPM, if installed
@@ -258,7 +258,7 @@ if [ $IONCUBE_INSTALLED = "no" ]; then
     set -e
 
     if [ ! -z "$PHPFPM" ]; then
-        service php-fpm restart
+        service php-fpm restart &> /dev/null
     fi
 else
     echo "IonCube installed already, moving on..."
@@ -289,7 +289,7 @@ curl -s -o ./helpspot.tar.gz https://s3.amazonaws.com/helpspot-downloads/$HSVERS
 printf "Where should HelpSpot be installed? >"
 read INSTALLPATH
 
-### Create dir if not exists, permissions (user www-data, httpd)
+### Create dir if not exists, permissions (user www-data, apache)
 if [ ! -d "$INSTALLPATH" ]; then
   mkdir -p $INSTALLPATH
 fi
@@ -311,9 +311,7 @@ rm -r $INSTALLPATH/helpspot_$HSVERSION
 # Set Permissions
 find $INSTALLPATH/ -type f -exec chmod 664 {} +
 find $INSTALLPATH/ -type d -exec chmod 755 {} +
-chmod guo+x $INSTALLPATH/hs
-
-
+chmod +x $INSTALLPATH/hs
 
 
 
@@ -391,6 +389,14 @@ CONFIG=$(sed -e 's@{{DB_HOST}}@'$DB_HOST'@' \
 # Double quotes needed to preserve line breaks
 echo "$CONFIG" > $INSTALLPATH/config.php
 
+# Set Ownership
+if [ -z "$YUM" ]; then
+    # APT PRESENT
+    chown -R www-data:www-data $INSTALLPATH
+else
+    # YUM PRESENT
+    chown -R apache:apache $INSTALLPATH
+fi
 
 
 
@@ -427,10 +433,10 @@ cd $INSTALLPATH
 # These segfault on amzn linux
 if [ -z "$YUM" ]; then
     # APT PRESENT
-    php hs search:config --debian
+    php hs search:config --debian=true &> /dev/null
 else
     # YUM PRESENT
-    php hs search:config --redhat
+    php hs search:config --redhat=true &> /dev/null
 fi
 
 ###
@@ -551,7 +557,7 @@ if [ -z "$YUM" ]; then
     # APT PRESENT
     # Install
     apt-get install -y gdebi-core &> /dev/null
-    gdebi -nq "./$SPHINXPKGNAME"
+    gdebi -nq "./$SPHINXPKGNAME" &> /dev/null
 
     # Stop the service
     service sphinxsearch stop &> /dev/null
@@ -576,9 +582,8 @@ else
     chown sphinx:sphinx /var/lib/sphinx/data
 fi
 
-
-echo "Indexing Sphinx"
-indexer --all &> /dev/null
+# Cleanup sphinx package after install
+rm "./$SPHINXPKGNAME"
 
 
 ###
@@ -607,7 +612,11 @@ if [ ! -z "$HASSELINUX" ]; then
 fi
 
 if [ $ENFORCING = "Enforcing" ]; then
-    # Set our data dir to proper SELinux permissions
+    # Set helpspot web file permissions
+    sudo chcon -Rv --user=system_u --role=object_r --type=httpd_sys_content_t $INSTALLPATH &> /dev/null
+    # Allow data directory to be written to
+    sudo chcon -Rv --type=httpd_sys_content_rw_t $INSTALLPATH/data &> /dev/null
+    # Set sphinx data dir to proper SELinux permissions
     chcon --user=system_u --role=object_r --type=var_lib_t /var/lib/sphinx/data
     # Enable httpd to connect to network, needed for sphinxsearch
     # since it's connected to over MySQL network protocol
@@ -624,13 +633,32 @@ fi
 
 
 ###
+### Index & Start SphinxSearch
+###
+echo "Indexing Sphinx"
+indexer --all &> /dev/null
+
+if [ -z "$YUM" ]; then
+    # APT PRESENT
+    service sphinxsearch start &> /dev/null
+else
+    # YUM PRESENT
+    service searchd start  &> /dev/null
+fi
+
+
+###
 ### Setup Cron Tasks
 ###
 
 echo "Setting SphinxSearch CRON Tasks"
 
-echo "0 0 * * * root indexer --all --rotate" > /etc/cron.d/sphinx
-echo "0 */6 * * * root indexer forums_ndx knowledgebooks_ndx --rotate" > /etc/cron.d/sphinx
+SPHINXCRONFILE=/etc/cron.d/helpspotsphinx
+
+# Reset sphinx cron file
+echo "" > $SPHINXCRONFILE
+echo "0 0 * * * root indexer --all --rotate" > $SPHINXCRONFILE
+echo "0 */6 * * * root indexer forums_ndx knowledgebooks_ndx --rotate" >> $SPHINXCRONFILE
 
 # Template for delta indeces
 ! read -d '' DELTATEMPLATE << EOF
@@ -645,11 +673,11 @@ EOF
 mkdir -p /opt/sphinx
 echo "$DELTATEMPLATE" > /opt/sphinx/delta_index.sh
 chmod +x /opt/sphinx/delta_index.sh
-echo "0/10 * * * * root /opt/sphinx/delta_index.sh" > /etc/cron.d/sphinx
+echo "0/10 * * * * root /opt/sphinx/delta_index.sh" >> $SPHINXCRONFILE
 
 if [ $ENFORCING = "Enforcing" ]; then
     # Set our data dir to proper SELinux permissions
-    chcon --user=system_u --role=object_r --type=system_cron_spool_t /etc/cron.d/sphinx
+    chcon --user=system_u --role=object_r --type=system_cron_spool_t $SPHINXCRONFILE
 fi
 
 
