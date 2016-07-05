@@ -22,21 +22,35 @@ That will need documentation to note that.
 
 Here's how to use this script.
 
-### Prep:
+### 1. Preparation
 
-1. Server must have a web server and php 5.4+ installed prior to running the instsallation script.
-    - Scripts provided `server_deb.sh` and `server_rpm.sh` can help setup a FRESH (new) server for Debian/Ubuntu or RedHat/CentOS servers
-2. HelpSpot license file much be present on the server file system. Usually named `license.txt`.
-3. Create a database in MySQL with the following statement (adjust the database name as needed):
+Your server must already have:
+
+1. A web server (e.g. Apache or Nginx)
+2. PHP 5.4+
+3. HelpSpot license file much be present on the server file system. Usually named `license.txt`.
+4. Create a database in MySQL with the following statement (adjust the database name as needed):
 
 ```sql
 CREATE DATABASE IF NOT EXISTS helpspot_db 
-       CHARSET utf8mb4 COLLATE utf8mb4_unicode_ci;
+    CHARSET utf8mb4 COLLATE utf8mb4_unicode_ci;
 ```
 
-> You may wish to create a user specifically for HelpSpot as well.
+You may wish to create a MySQL user specifically for HelpSpot as well.
 
-### Download Script
+```sql
+CREATE USER 'helpspot_user'@'localhost' IDENTIFIED BY 'some_secure_password';
+GRANT ALL PRIVILEGES on helpspot_db.* TO 'helpspot_user'@'localhost';
+```
+
+**Useful Tools:**
+
+Two scripts are available to help setup a ***new*** server for Debian/Ubuntu or RedHat/CentOS servers. You can run these scripts directly on a new server, or use them as a reference on setting up a new server.
+
+1. Debian/Ubuntu: [server_deb.sh](https://install.helpspot.com/server_deb.sh)
+2. RedHat/CentOS: [server_rpm.sh](https://install.helpspot.com/server_rpm.sh)
+
+### 2. Download Script
 
 You can download the script to your local server:
 
@@ -53,7 +67,7 @@ To check that it matches, run the following on your installed script (here we as
 md5 < install.sh
 ```
 
-### Install:
+### 3. Install:
 
 Once the `install.sh` script is present on the web server, you can begin the installation process:
 
@@ -79,5 +93,13 @@ This will prompt for:
     - Timezone (Includes auto-complete, but you can also [find valid timezones here](http://php.net/manual/en/timezones.php))
 
 ## Issues
+
+#### Re-Trying the Install Script
+
+If the script fails due to providing incorrect information at a prompt, you may need to clean up the helpspot installation directory (e.g. `rm -r /var/www/helpspot`) before attempting the install script again.
+
+This script does not over-write files existing in the install location.
+
+#### Other Issues
 
 If you run into any issues, [contact HelpSpot Customer Support](https://support.helpspot.com/index.php?pg=request).

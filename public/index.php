@@ -16,6 +16,7 @@ $html = $parser->transform(file_get_contents('../README.md'));?><!doctype html>
         <title>HelpSpot Installer</title>
         <link rel="icon" type="image/png" href="https://www.helpspot.com/images/favicon.png">
         <link rel="stylesheet" href="/markdown.css">
+        <!-- <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.5.0/styles/default.min.css"> -->
         <style>
             .markdown-body {
                 box-sizing: border-box;
@@ -30,5 +31,8 @@ $html = $parser->transform(file_get_contents('../README.md'));?><!doctype html>
         <article class="markdown-body">
             <?php echo str_replace('{{md5checksum}}', $md5checksum, $html); ?>
         </article>
+
+        <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.5.0/highlight.min.js"></script>
+        <script>hljs.initHighlightingOnLoad();</script>
     </body>
 </html>
