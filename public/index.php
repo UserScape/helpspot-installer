@@ -2,6 +2,9 @@
 
 require_once('../vendor/autoload.php');
 
+$script = file_get_contents('../install.sh');
+$md5checksum = md5($script);
+
 use \Michelf\MarkdownExtra;
 $parser = new MarkdownExtra;
 
@@ -11,6 +14,7 @@ $html = $parser->transform(file_get_contents('../README.md'));?><!doctype html>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1, minimal-ui">
         <title>HelpSpot Installer</title>
+        <link rel="icon" type="image/png" href="https://www.helpspot.com/images/favicon.png">
         <link rel="stylesheet" href="/markdown.css">
         <style>
             .markdown-body {
@@ -24,7 +28,7 @@ $html = $parser->transform(file_get_contents('../README.md'));?><!doctype html>
     </head>
     <body>
         <article class="markdown-body">
-        <?php echo $html; ?>
+            <?php echo str_replace('{{md5checksum}}', $md5checksum, $html); ?>
         </article>
     </body>
 </html>
