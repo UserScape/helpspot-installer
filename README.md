@@ -38,7 +38,8 @@ This will prompt for:
 1. Where to install HelpSpot (e.g. `/var/www/helpspot`)
 2. Database information (to configure HelpSpot's `config.php` file)
 3. HelpSpot install details, including 
-    - admin user information
+    - Admin user email/password
+    - HelpSpot details (name, reply-to email)
     - HelpSpot Customer ID
     - Timezone (Includes auto-complete, but you can also [find valid timezones here](http://php.net/manual/en/timezones.php))
 
