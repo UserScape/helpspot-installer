@@ -44,6 +44,12 @@ php_version () {
     PHPVERSION=$($PHPBINARY -v | sed -n 1p | awk '{print $2}' | cut -c1-3)
 }
 
+apache_ctl () {
+    set +e
+    APACHECTL=$(which apachectl 2> /dev/null)
+    set -e
+}
+
 hs_version () {
     HSVERSION=$(curl -s https://store.helpspot.com/latest-release)
 }
@@ -151,7 +157,7 @@ hs_version
 machine_type
 pkg_manager
 php_location
-
+apache_ctl
 
 
 
@@ -244,10 +250,6 @@ if [ $IONCUBE_INSTALLED = "no" ]; then
     ###
 
     # Restart Apache, if installed
-    set +e
-    APACHECTL=$(which apachectl 2> /dev/null)
-    set -e
-
     if [ ! -z "$APACHECTL" ]; then
         $APACHECTL restart &> /dev/null
     fi
@@ -621,6 +623,12 @@ if [ $ENFORCING = "Enforcing" ]; then
     # Enable httpd to connect to network, needed for sphinxsearch
     # since it's connected to over MySQL network protocol
     setsebool -P httpd_can_network_connect on
+    # Set ioncube file to correct settings for apace
+    sudo chcon --user=system_u --role=object_r --type=lib_t "$PHPDIR/ioncube_loader_lin_$PHPVERSION.so"
+
+    if [ ! -z "$APACHECTL" ]; then
+        $APACHECTL restart &> /dev/null
+    fi
 fi
 
 if [ $ENFORCING = "Enforcing" ] && [ -f /usr/lib/tmpfiles.d/searchd.conf ]; then
