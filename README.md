@@ -53,7 +53,7 @@ To check that it matches, run the following on your installed script (here we as
 md5 < install.sh
 
 # Use md5sum if no "md5" found
-md5 < install.sh
+md5sum < install.sh
 ```
 
 ### 3. Install:
