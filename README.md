@@ -2,21 +2,7 @@
 
 <h1 style="line-height:62px;"><img src="https://www.helpspot.com/img/logo.png" alt="HelpSpot logo" height="62" width="171" style="float: left; margin-right: 20px;"> Installer</h1>
 
-An installation script for GNU/Linux servers.
-
-Tested on:
-
-1. CentOS 7
-2. RedHat 7
-3. Debian 8
-4. Ubuntu 14.04
-
-<!--
-Notes:
-
-RedHat/CentOS 6 fairly common, but they need php 5.4 and mysql 5.5 minimum.
-That will need documentation to note that.
--->
+An HelpSpot installation script for GNU/Linux servers.
 
 ## How to Use:
 
@@ -65,6 +51,9 @@ To check that it matches, run the following on your installed script (here we as
 ```bash
 # Should be {{md5checksum}}
 md5 < install.sh
+
+# Use md5sum if no "md5" found
+md5 < install.sh
 ```
 
 ### 3. Install:
@@ -91,6 +80,21 @@ This will prompt for:
     - HelpSpot details (name, reply-to email)
     - HelpSpot Customer ID
     - Timezone (Includes auto-complete, but you can also [find valid timezones here](http://php.net/manual/en/timezones.php))
+
+## Compatibility
+
+This installation script has been tested on:
+
+1. ![centos](https://s3.amazonaws.com/helpspot-assets/os-centos.png) CentOS 7
+2. ![centos](https://s3.amazonaws.com/helpspot-assets/os-centos.png) CentOS 6<sup>†</sup>
+3. ![redhat](https://s3.amazonaws.com/helpspot-assets/os-rh.png) RedHat 7
+4. ![redhat](https://s3.amazonaws.com/helpspot-assets/os-rh.png) RedHat 6<sup>†</sup>
+5. ![debian](https://s3.amazonaws.com/helpspot-assets/os-debian.png) Debian 8
+6. ![ubuntu](https://s3.amazonaws.com/helpspot-assets/os-ubuntu.png) Ubuntu 14.04<sup>††</sup>
+
+<sup>†</sup> Requires non-standard packages to install [MySQL 5.5+](http://www.tecmint.com/install-latest-mysql-on-rhel-centos-and-fedora/) and [PHP 5.4+](https://webtatic.com/packages/php56/)
+
+<sup>††</sup> Ubuntu **16.04** comes with PHP 7.0, which HelpSpot is not yet compatible with.
 
 ## Issues
 
