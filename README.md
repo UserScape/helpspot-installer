@@ -29,12 +29,12 @@ CREATE USER 'helpspot_user'@'localhost' IDENTIFIED BY 'some_secure_password';
 GRANT ALL PRIVILEGES on helpspot_db.* TO 'helpspot_user'@'localhost';
 ```
 
-**Useful Tools:**
-
-Two scripts are available to help setup a ***new*** server for Debian/Ubuntu or RedHat/CentOS servers. You can run these scripts directly on a new server, or use them as a reference on setting up a new server.
-
-1. Debian/Ubuntu: [server_deb.sh](https://install.helpspot.com/server_deb.sh)
-2. RedHat/CentOS: [server_rpm.sh](https://install.helpspot.com/server_rpm.sh)
+> **Useful Tools:**
+>
+> Two scripts are available to help setup a ***new*** server for Debian/Ubuntu or RedHat/CentOS servers. You can run these scripts directly on a new server, or use them as a reference on setting up a new server. However please review them to ensure they're correct for your version and flavor of GNU/Linux before running them.
+>
+> 1. Debian/Ubuntu: [server_deb.sh](https://install.helpspot.com/server_deb.sh)
+> 2. RedHat/CentOS: [server_rpm.sh](https://install.helpspot.com/server_rpm.sh)
 
 ### 2. Download Script
 
@@ -107,3 +107,8 @@ This script does not over-write files existing in the install location.
 #### Other Issues
 
 If you run into any issues, [contact HelpSpot Customer Support](https://support.helpspot.com/index.php?pg=request).
+
+
+## Contributions
+
+Contributions are welcome! You can find the source for [HelpSpot Installer on GitHub](https://github.com/userscape/helpspot-installer).
