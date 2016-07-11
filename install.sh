@@ -696,7 +696,7 @@ EOF
 mkdir -p /opt/sphinx
 echo "$DELTATEMPLATE" > /opt/sphinx/delta_index.sh
 chmod +x /opt/sphinx/delta_index.sh
-sh -c "echo '0/10 * * * * root /opt/sphinx/delta_index.sh' >> $SPHINXCRONFILE"
+sh -c "echo '*/10 * * * * root /opt/sphinx/delta_index.sh' >> $SPHINXCRONFILE"
 
 if [ $ENFORCING = "Enforcing" ]; then
     # Set our data dir to proper SELinux permissions
