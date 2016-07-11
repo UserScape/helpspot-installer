@@ -1,6 +1,6 @@
 
 
-<h1 style="line-height:62px;"><img src="https://www.helpspot.com/img/logo.png" alt="HelpSpot logo" height="62" width="171" style="float: left; margin-right: 20px;"> Installer</h1>
+<h1 style="line-height:62px;"><img src="https://www.helpspot.com/img/logo.png" alt="HelpSpot logo" height="62" width="171" style="float: left; margin-right: 20px;"> Linux Installer</h1>
 
 An HelpSpot installation script for GNU/Linux servers.
 
@@ -63,8 +63,8 @@ Once the `install.sh` script is present on the web server, you can begin the ins
 ```bash
 # Requires root or sudo user to run
 
-# This installs license.txt is alongside install.sh,
-#   within the same directory
+# If you've placed your HelpSpot license file in this same directory
+# and named it license.txt just run this command.
 sudo bash install.sh
 
 # Or we can define the license file location
