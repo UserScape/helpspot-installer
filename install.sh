@@ -659,14 +659,29 @@ fi
 ### Setup Cron Tasks
 ###
 
+echo "Setting HelpSpot CRON Tasks"
+
+HELPSPOTCRONFILE=/etc/cron.d/helpspot
+
+if [ -z "$YUM" ]; then
+    # APT PRESENT
+    HSCRONUSER='www-data'
+else
+    # YUM PRESENT
+    HSCRONUSER='apache'
+fi
+
+sh -c "echo '*/2 * * * * $HSCRONUSER $PHPBINARY $INSTALLPATH/tasks.php' > $HELPSPOTCRONFILE"
+sh -c "echo '* * * * * $HSCRONUSER $PHPBINARY $INSTALLPATH/tasks2.php' >> $HELPSPOTCRONFILE"
+
+
 echo "Setting SphinxSearch CRON Tasks"
 
 SPHINXCRONFILE=/etc/cron.d/helpspotsphinx
 
 # Reset sphinx cron file
-echo "" > $SPHINXCRONFILE
-echo "0 0 * * * root indexer --all --rotate" > $SPHINXCRONFILE
-echo "0 */6 * * * root indexer forums_ndx knowledgebooks_ndx --rotate" >> $SPHINXCRONFILE
+sh -c "echo '0 0 * * * root indexer --all --rotate' > $SPHINXCRONFILE"
+sh -c "echo '0 */6 * * * root indexer forums_ndx knowledgebooks_ndx --rotate' >> $SPHINXCRONFILE"
 
 # Template for delta indeces
 ! read -d '' DELTATEMPLATE << EOF
@@ -681,7 +696,7 @@ EOF
 mkdir -p /opt/sphinx
 echo "$DELTATEMPLATE" > /opt/sphinx/delta_index.sh
 chmod +x /opt/sphinx/delta_index.sh
-echo "0/10 * * * * root /opt/sphinx/delta_index.sh" >> $SPHINXCRONFILE
+sh -c "echo '0/10 * * * * root /opt/sphinx/delta_index.sh' >> $SPHINXCRONFILE"
 
 if [ $ENFORCING = "Enforcing" ]; then
     # Set our data dir to proper SELinux permissions
