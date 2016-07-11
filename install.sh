@@ -659,12 +659,27 @@ fi
 ### Setup Cron Tasks
 ###
 
+echo "Setting HelpSpot CRON Tasks"
+
+HELPSPOTCRONFILE=/etc/cron.d/helpspot
+
+if [ -z "$YUM" ]; then
+    # APT PRESENT
+    HSCRONUSER='www-data'
+else
+    # YUM PRESENT
+    HSCRONUSER='apache'
+fi
+
+echo "*/2 * * * * $HSCRONUSER $PHPBINARY $INSTALLPATH/tasks.php" > $HELPSPOTCRONFILE
+echo "* * * * * $HSCRONUSER $PHPBINARY $INSTALLPATH/tasks2.php" >> $HELPSPOTCRONFILE
+
+
 echo "Setting SphinxSearch CRON Tasks"
 
 SPHINXCRONFILE=/etc/cron.d/helpspotsphinx
 
 # Reset sphinx cron file
-echo "" > $SPHINXCRONFILE
 echo "0 0 * * * root indexer --all --rotate" > $SPHINXCRONFILE
 echo "0 */6 * * * root indexer forums_ndx knowledgebooks_ndx --rotate" >> $SPHINXCRONFILE
 
