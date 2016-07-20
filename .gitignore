@@ -3,3 +3,5 @@ Vagrantfile
 license.txt
 .idea
 /vendor/
+bin/vendor/
+box
