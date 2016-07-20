@@ -1,0 +1,19 @@
+{
+    "alias": "helpspot.phar",
+    "chmod": "0755",
+    "finder": [
+        {
+            "name": "*.php",
+            "exclude": ["Tests"],
+            "in": "vendor"
+        },
+        {
+            "name": "*.php",
+            "in": "includes"
+        }
+    ],
+    "git-version": "package_version",
+    "main": "helpspot.php",
+    "output": "build/helpspot.phar",
+    "stub": true
+}
