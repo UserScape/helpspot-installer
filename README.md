@@ -13,7 +13,7 @@ Here's how to use this script.
 Your server must already have:
 
 1. A web server (e.g. Apache or Nginx)
-2. PHP 5.4+
+2. PHP 5.4, 5.5 or 5.6
 3. HelpSpot license file much be present on the server file system. Usually named `license.txt`.
 4. Create a database in MySQL with the following statement (adjust the database name as needed):
 
