@@ -69,12 +69,12 @@ pkg_manager () {
       # APT PRESENT
       INSTALLER="$APT"
       echo "Installing lsb_release command"
-      $INSTALLER install -y curl lsb-core &> /dev/null
+      $INSTALLER install -y curl lsb-core > /dev/null
     else
       # YUM PRESENT
       INSTALLER="$YUM"
       echo "Installing lsb_release command"
-      $INSTALLER install -y curl redhat-lsb-core &> /dev/null
+      $INSTALLER install -y curl redhat-lsb-core > /dev/null
     fi
 }
 
