@@ -40,7 +40,7 @@ php_binary () {
 }
 
 php_version () {
-    # 5.4, 5.5, 5.6
+    # 5.4, 5.5, 5.6, 7.0, 7.1
     PHPVERSION=$($PHPBINARY -v | sed -n 1p | awk '{print $2}' | cut -c1-3)
 }
 
@@ -90,8 +90,11 @@ php_location () {
         # centos/redhat
         PHPDIR="/etc/php.d"
     elif [ -d "/etc/php5/mods-available" ]; then
-        # debian/ubuntu
+        # debian/ubuntu php5
         PHPDIR="/etc/php5/mods-available"
+    elif [ -d "/etc/php/$PHPVERSION/mods-available" ]; then
+        # debian/ubuntu php7
+        PHPDIR="/etc/php/$PHPVERSION/mods-available"
     else
         echo "WARNING: Cannot find PHP directory"
         printf "\nIn what directory are php INI files located? >"
@@ -229,6 +232,12 @@ if [ $IONCUBE_INSTALLED = "no" ]; then
         ln -s $PHPDIR/00-ioncube.ini /etc/php5/cli/conf.d/00-ioncube.ini
     fi
 
+    # CLI php7 probably always exists
+    if [ -d "/etc/php/$PHPVERSION/cli/conf.d" ]; then
+        # debian/ubuntu
+        ln -s $PHPDIR/00-ioncube.ini /etc/php/$PHPVERSION/cli/conf.d/00-ioncube.ini
+    fi
+
     # If php-fpm is used
     if [ -d "/etc/php5/fpm/conf.d" ]; then
         # debian/ubuntu
@@ -237,10 +246,27 @@ if [ $IONCUBE_INSTALLED = "no" ]; then
         service php5-fpm restart &> /dev/null
     fi
 
+    # If php-fpm php7 is used
+    if [ -d "/etc/php/$PHPVERSION/fpm/conf.d" ]; then
+        # debian/ubuntu
+        ln -s $PHPDIR/00-ioncube.ini /etc/php/$PHPVERSION/fpm/conf.d/00-ioncube.ini
+        # Restart php-fpm
+        # TODO: will eventually be php7.1-fpm
+        service php7.0-fpm restart &> /dev/null
+    fi
+
     # If apache mod-php is used
     if [ -d "/etc/php5/apache2/conf.d" ]; then
         # debian/ubuntu
-        ln -s $PHPDIR/00-ioncube.ini /etc/php5/fpm/conf.d/00-ioncube.ini
+        ln -s $PHPDIR/00-ioncube.ini /etc/php5/apache2/conf.d/00-ioncube.ini
+        # Restart apache2
+        service apache2 restart &> /dev/null
+    fi
+
+    # If apache mod-php php7 is used
+    if [ -d "/etc/php/$PHPVERSION/apache2/conf.d" ]; then
+        # debian/ubuntu
+        ln -s $PHPDIR/00-ioncube.ini /etc/php/$PHPVERSION/apache2/conf.d/00-ioncube.ini
         # Restart apache2
         service apache2 restart &> /dev/null
     fi
@@ -433,6 +459,7 @@ echo "Installing & Configuring SphinxSearch"
 cd $INSTALLPATH
 
 # These segfault on amzn linux
+# TODO: may need to add --data-path=/var/www/sphinx --pid-path=/var/run/sphinxsearch in ubuntu 16.04+
 if [ -z "$YUM" ]; then
     # APT PRESENT
     php hs search:config --debian=true &> /dev/null
@@ -474,6 +501,7 @@ OS=$(lsb_release -i | awk -F ':' '{print $2}' | awk '{print $1}')
 # major version ["deb": [12, 14, 6, 7, 8], "rpm": [6, 7, 2016]]
 MAJORVERSION=$(lsb_release -r | awk '{print $2}' | awk -F '.' '{print $1}')
 
+# TODO: 2.2.11 is out and the version we should use
 set +e
 SPHINXURL=$(python -c "urls={
     'Ubuntu':{
