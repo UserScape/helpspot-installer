@@ -39,6 +39,18 @@ php_binary () {
     fi
 }
 
+python_binary () {
+    # Don't bail out when
+    # one of these comands fails
+    set +e
+    PYTHONBIN=$(which python 2> /dev/null)
+    set -e
+
+    if [ -z "$PYTHONBIN" ]; then
+      PYTHONBIN="python3"
+    fi
+}
+
 php_version () {
     # 5.4, 5.5, 5.6, 7.0, 7.1
     PHPVERSION=$($PHPBINARY -v | sed -n 1p | awk '{print $2}' | cut -c1-3)
@@ -93,7 +105,7 @@ php_location () {
         # debian/ubuntu php5
         PHPDIR="/etc/php5/mods-available"
     elif [ -d "/etc/php/$PHPVERSION/mods-available" ]; then
-        # debian/ubuntu php7
+        # debian/ubuntu newer php5.6, php7+
         PHPDIR="/etc/php/$PHPVERSION/mods-available"
     else
         echo "WARNING: Cannot find PHP directory"
@@ -155,6 +167,7 @@ echo "             |_|        |_|              "
 echo "Preparing Installation..."
 
 php_binary
+python_binary
 php_version
 hs_version
 machine_type
@@ -454,21 +467,6 @@ php hs install --license-file="$LICENSEPATH"
 echo "Installing & Configuring SphinxSearch"
 
 ###
-### CREATE SPHINX CONFIG FILE
-###
-cd $INSTALLPATH
-
-# These segfault on amzn linux
-# TODO: may need to add --data-path=/var/www/sphinx --pid-path=/var/run/sphinxsearch in ubuntu 16.04+
-if [ -z "$YUM" ]; then
-    # APT PRESENT
-    php hs search:config --debian=true &> /dev/null
-else
-    # YUM PRESENT
-    php hs search:config --redhat=true &> /dev/null
-fi
-
-###
 ### DOWNLOAD SPHINX
 ###
 
@@ -501,17 +499,20 @@ OS=$(lsb_release -i | awk -F ':' '{print $2}' | awk '{print $1}')
 # major version ["deb": [12, 14, 6, 7, 8], "rpm": [6, 7, 2016]]
 MAJORVERSION=$(lsb_release -r | awk '{print $2}' | awk -F '.' '{print $1}')
 
-# TODO: 2.2.11 is out and the version we should use
 set +e
-SPHINXURL=$(python -c "urls={
+SPHINXURL=$($PYTHONBIN -c "urls={
     'Ubuntu':{
         '12':{
-            'x86_64': 'http://sphinxsearch.com/files/sphinxsearch_2.2.10-release-0ubuntu12~precise_amd64.deb',
-            'i386': 'http://sphinxsearch.com/files/sphinxsearch_2.2.10-release-0ubuntu12~precise_i386.deb'
+            'x86_64': 'http://sphinxsearch.com/files/sphinxsearch_2.2.11-release-1~precise_amd64.deb',
+            'i386': 'http://sphinxsearch.com/files/sphinxsearch_2.2.11-release-1~precise_i386.deb'
         },
         '14':{
-            'x86_64': 'http://sphinxsearch.com/files/sphinxsearch_2.2.10-release-0ubuntu12~trusty_amd64.deb',
-            'i386': 'http://sphinxsearch.com/files/sphinxsearch_2.2.10-release-0ubuntu12~trusty_i386.deb'
+            'x86_64': 'http://sphinxsearch.com/files/sphinxsearch_2.2.11-release-1~trusty_amd64.deb',
+            'i386': 'http://sphinxsearch.com/files/sphinxsearch_2.2.11-release-1~trusty_i386.deb'
+        },
+        '16':{
+            'x86_64': 'http://sphinxsearch.com/files/sphinxsearch_2.2.11-release-1~xenial_amd64.deb',
+            'i386': 'http://sphinxsearch.com/files/sphinxsearch_2.2.11-release-1~xenial_i386.deb'
         }
     },
     'Debian': {
@@ -520,49 +521,49 @@ SPHINXURL=$(python -c "urls={
             'i386': 'http://sphinxsearch.com/files/sphinxsearch_2.2.10-release-1_i386.deb'
         },
         '7': {
-            'x86_64': 'http://sphinxsearch.com/files/sphinxsearch_2.2.10-release-1~wheezy_amd64.deb',
-            'i386': 'http://sphinxsearch.com/files/sphinxsearch_2.2.10-release-1~wheezy_i386.deb'
+            'x86_64': 'http://sphinxsearch.com/files/sphinxsearch_2.2.11-release-1~wheezy_amd64.deb',
+            'i386': 'http://sphinxsearch.com/files/sphinxsearch_2.2.11-release-1~wheezy_i386.deb'
         },
         '8': {
-            'x86_64': 'http://sphinxsearch.com/files/sphinxsearch_2.2.10-release-1~jessie_amd64.deb',
-            'i386': 'http://sphinxsearch.com/files/sphinxsearch_2.2.10-release-1~jessie_i386.deb'
+            'x86_64': 'http://sphinxsearch.com/files/sphinxsearch_2.2.11-release-1~jessie_amd64.deb',
+            'i386': 'http://sphinxsearch.com/files/sphinxsearch_2.2.11-release-1~jessie_i386.deb'
         },
     },
     'CentOS': {
         '5': {
-            'x86_64': 'http://sphinxsearch.com/files/sphinx-2.2.10-1.rhel5.x86_64.rpm',
-            'i386': 'http://sphinxsearch.com/files/sphinx-2.2.10-1.rhel5.i386.rpm'
+            'x86_64': 'http://sphinxsearch.com/files/sphinx-2.2.11-2.rhel5.x86_64.rpm',
+            'i386': 'http://sphinxsearch.com/files/sphinx-2.2.11-2.rhel5.i386.rpm'
         },
         '6': {
-            'x86_64': 'http://sphinxsearch.com/files/sphinx-2.2.10-1.rhel6.x86_64.rpm',
-            'i386': 'http://sphinxsearch.com/files/sphinx-2.2.10-1.rhel6.i386.rpm'
+            'x86_64': 'http://sphinxsearch.com/files/sphinx-2.2.11-2.rhel6.x86_64.rpm',
+            'i386': 'http://sphinxsearch.com/files/sphinx-2.2.11-2.rhel6.i386.rpm'
         },
         '7': {
-            'x86_64': 'http://sphinxsearch.com/files/sphinx-2.2.10-1.rhel7.x86_64.rpm'
+            'x86_64': 'http://sphinxsearch.com/files/sphinx-2.2.11-1.rhel7.x86_64.rpm'
         }
     },
     'RedHatEnterpriseServer': {
         '5': {
-            'x86_64': 'http://sphinxsearch.com/files/sphinx-2.2.10-1.rhel5.x86_64.rpm',
-            'i386': 'http://sphinxsearch.com/files/sphinx-2.2.10-1.rhel5.i386.rpm'
+            'x86_64': 'http://sphinxsearch.com/files/sphinx-2.2.11-2.rhel5.x86_64.rpm',
+            'i386': 'http://sphinxsearch.com/files/sphinx-2.2.11-2.rhel5.i386.rpm'
         },
         '6': {
-            'x86_64': 'http://sphinxsearch.com/files/sphinx-2.2.10-1.rhel6.x86_64.rpm',
-            'i386': 'http://sphinxsearch.com/files/sphinx-2.2.10-1.rhel6.i386.rpm'
+            'x86_64': 'http://sphinxsearch.com/files/sphinx-2.2.11-2.rhel6.x86_64.rpm',
+            'i386': 'http://sphinxsearch.com/files/sphinx-2.2.11-2.rhel6.i386.rpm'
         },
         '7': {
-            'x86_64': 'http://sphinxsearch.com/files/sphinx-2.2.10-1.rhel7.x86_64.rpm'
+            'x86_64': 'http://sphinxsearch.com/files/sphinx-2.2.11-1.rhel7.x86_64.rpm'
         }
     },
     'AmazonAMI': {
         '2016': {
-            'x86_64': 'http://sphinxsearch.com/files/sphinx-2.2.10-1.rhel6.x86_64.rpm',
-            'i386': 'http://sphinxsearch.com/files/sphinx-2.2.10-1.rhel6.i386.rpm'
+            'x86_64': 'http://sphinxsearch.com/files/sphinx-2.2.11-2.rhel6.x86_64.rpm',
+            'i386': 'http://sphinxsearch.com/files/sphinx-2.2.11-2.rhel6.i386.rpm'
         }
     },
 };
 try:
-    print urls['$OS']['$MAJORVERSION']['$MACHINE_TYPE']
+    print(urls['$OS']['$MAJORVERSION']['$MACHINE_TYPE'])
 except KeyError:
     exit(1)
 ")
@@ -592,7 +593,16 @@ if [ -z "$YUM" ]; then
     # Stop the service
     service sphinxsearch stop &> /dev/null
 
-    # Set our config file
+    # if /var/run/sphinxsearch exists, use that, else use /var/run
+    PIDPATH="/var/run"
+    if [ -d /var/run/sphinxsearch ]; then
+        PIDPATH="/var/run/sphinxsearch"
+    fi
+
+    # Configure sphinx.conf
+    cd $INSTALLPATH
+    php hs search:config --debian=true --pid-path=$PIDPATH &> /dev/null
+
     mv /etc/sphinxsearch/sphinx.conf /etc/sphinxsearch/sphinx-orig.conf
     cp $INSTALLPATH/data/sphinx.conf /etc/sphinxsearch/sphinx.conf
 else
@@ -604,7 +614,10 @@ else
     # Unnecessary
     service searchd stop  &> /dev/null
 
-    # Set our config file
+    # Configure sphinx.conf
+    cd $INSTALLPATH
+    php hs search:config --redhat=true &> /dev/null
+
     mv /etc/sphinx/sphinx.conf /etc/sphinx/sphinx-orig.conf
     cp $INSTALLPATH/data/sphinx.conf /etc/sphinx/sphinx.conf
 
@@ -613,6 +626,7 @@ else
 fi
 
 # Cleanup sphinx package after install
+cd $INSTALLPATH
 rm "./$SPHINXPKGNAME"
 
 
@@ -673,6 +687,9 @@ fi
 ###
 echo "Indexing Sphinx"
 indexer --all &> /dev/null
+
+# Ubuntu 16.04: /var/log/sphinxsearch, if exists, should be owned by sphinxsearch
+#               /var/run/sphinxsearch should exist, sphinx.conf has wrong path (/var/run/sphinx.conf)
 
 if [ -z "$YUM" ]; then
     # APT PRESENT

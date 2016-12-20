@@ -3,3 +3,4 @@ Vagrantfile
 license.txt
 .idea
 /vendor/
+reset.sh

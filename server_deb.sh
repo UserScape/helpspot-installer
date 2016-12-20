@@ -5,7 +5,7 @@ set -e
 
 ## Install Basics
 apt-get update &> /dev/null
-apt-get install -y -qq nginx php5-fpm php5-cli php5-mysql php5-curl php5-gd php5-intl php5-imap &> /dev/null
+apt-get install -y -qq nginx php7.0-fpm php7.0-cli php7.0-mysql php7.0-curl php7.0-xml php7.0-gd php7.0-intl php7.0-imap &> /dev/null
 
 sudo debconf-set-selections <<< "mysql-server mysql-server/root_password password root"
 sudo debconf-set-selections <<< "mysql-server mysql-server/root_password_again password root"
@@ -46,15 +46,13 @@ server {
     }
 
     location ~ \\.php\$ {
-            # ubuntu 14.04 default
-            fastcgi_split_path_info ^(.+\.php)(/.+)\$;
-            fastcgi_pass unix:/var/run/php5-fpm.sock;
-            fastcgi_index index.php;
-            include fastcgi_params;
+            # nginx 1.10.* / ubuntu 16.04 default
+            include snippets/fastcgi-php.conf;
+            fastcgi_pass unix:/var/run/php/php7.0-fpm.sock;
 
             # debian 8 default
             ## include snippets/fastcgi-php.conf;
-            ## fastcgi_pass unix:/var/run/php5-fpm.sock;
+            ## fastcgi_pass unix:/var/run/php7.0-fpm.sock;
     }
 }
 EOF
