@@ -13,7 +13,7 @@ Here's how to use this script.
 Your server must already have:
 
 1. A web server (e.g. Apache or Nginx)
-2. PHP 5.4, 5.5 or 5.6
+2. PHP 5.6
 3. HelpSpot license file much be present on the server file system. Usually named `license.txt`.
 4. Create a database in MySQL with the following statement (adjust the database name as needed):
 
@@ -92,9 +92,9 @@ This installation script has been tested on:
 5. ![debian](https://s3.amazonaws.com/helpspot-assets/os-debian.png) Debian 8
 6. ![ubuntu](https://s3.amazonaws.com/helpspot-assets/os-ubuntu.png) Ubuntu 14.04<sup>††</sup>
 
-<sup>†</sup> Requires non-standard packages to install [MySQL 5.5+](http://www.tecmint.com/install-latest-mysql-on-rhel-centos-and-fedora/) and [PHP 5.4+](https://webtatic.com/packages/php56/)
+<sup>†</sup> Requires non-standard packages to install [MySQL 5.5+](http://www.tecmint.com/install-latest-mysql-on-rhel-centos-and-fedora/) and [PHP 5.6+](https://webtatic.com/packages/php56/)
 
-<sup>††</sup> Ubuntu **16.04** comes with PHP 7.0, which HelpSpot is not yet compatible with.
+<sup>††</sup> Ubuntu **16.04** comes with PHP 7.0, which is unsupported by the HelpSpot installer is not yet compatible with.
 
 ## Issues
 
