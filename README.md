@@ -13,7 +13,7 @@ Here's how to use this script.
 Your server must already have:
 
 1. A web server (e.g. Apache or Nginx)
-2. PHP 5.4, 5.5 or 5.6
+2. PHP 5.6, 7.0+
 3. HelpSpot license file much be present on the server file system. Usually named `license.txt`.
 4. Create a database in MySQL with the following statement (adjust the database name as needed):
 
@@ -31,7 +31,7 @@ GRANT ALL PRIVILEGES on helpspot_db.* TO 'helpspot_user'@'localhost';
 
 > **Useful Tools:**
 >
-> Two scripts are available to help setup a ***new*** server for Debian/Ubuntu or RedHat/CentOS servers. You can run these scripts directly on a new server, or use them as a reference on setting up a new server. However please review them to ensure they're correct for your version and flavor of GNU/Linux before running them.
+> Two optional scripts are available to help install Nginx, PHP and MySQL on a ***new*** server for Debian/Ubuntu or RedHat/CentOS servers. You can run these scripts directly on a new server, or use them as a reference on setting up a new server. However please review them to ensure they're correct for your version and flavor of GNU/Linux before running them.
 >
 > 1. Debian/Ubuntu: [server_deb.sh](https://install.helpspot.com/server_deb.sh)
 > 2. RedHat/CentOS: [server_rpm.sh](https://install.helpspot.com/server_rpm.sh)
@@ -90,19 +90,18 @@ This installation script has been tested on:
 3. ![redhat](https://s3.amazonaws.com/helpspot-assets/os-rh.png) RedHat 7
 4. ![redhat](https://s3.amazonaws.com/helpspot-assets/os-rh.png) RedHat 6<sup>†</sup>
 5. ![debian](https://s3.amazonaws.com/helpspot-assets/os-debian.png) Debian 8
-6. ![ubuntu](https://s3.amazonaws.com/helpspot-assets/os-ubuntu.png) Ubuntu 14.04<sup>††</sup>
+6. ![ubuntu](https://s3.amazonaws.com/helpspot-assets/os-ubuntu.png) Ubuntu 14.04
+7. ![ubuntu](https://s3.amazonaws.com/helpspot-assets/os-ubuntu.png) Ubuntu 16.04
 
 <sup>†</sup> Requires non-standard packages to install [MySQL 5.5+](http://www.tecmint.com/install-latest-mysql-on-rhel-centos-and-fedora/) and [PHP 5.4+](https://webtatic.com/packages/php56/)
-
-<sup>††</sup> Ubuntu **16.04** comes with PHP 7.0, which HelpSpot is not yet compatible with.
 
 ## Issues
 
 #### Re-Trying the Install Script
 
-If the script fails due to providing incorrect information at a prompt, you may need to clean up the helpspot installation directory (e.g. `rm -r /var/www/helpspot`) before attempting the install script again.
+If the script fails due to providing incorrect information at a prompt, you will need to clean up the helpspot installation directory (e.g. `rm -r /var/www/helpspot`) and reset the database (drop all tables, or delete and re-create the database) before attempting the install script again.
 
-This script does not over-write files existing in the install location.
+This script does **not** over-write files existing in the install location.
 
 #### Other Issues
 
