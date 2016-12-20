@@ -94,7 +94,7 @@ This installation script has been tested on:
 
 <sup>†</sup> Requires non-standard packages to install [MySQL 5.5+](http://www.tecmint.com/install-latest-mysql-on-rhel-centos-and-fedora/) and [PHP 5.6+](https://webtatic.com/packages/php56/)
 
-<sup>††</sup> Ubuntu **16.04** comes with PHP 7.0, which is unsupported by the HelpSpot installer is not yet compatible with.
+<sup>††</sup> Ubuntu **16.04** comes with PHP 7.0, which is not yet supported by the HelpSpot installer. PHP7 support coming soon!
 
 ## Issues
 
