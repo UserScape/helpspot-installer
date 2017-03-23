@@ -15,7 +15,7 @@ Your server must already have:
 1. A web server (e.g. Apache or Nginx)
 2. PHP 5.6, 7.0+
 3. HelpSpot license file much be present on the server file system. Usually named `license.txt`.
-4. Create a database in MySQL with the following statement (adjust the database name as needed):
+4. MySQL 5.6+ with a database created using the following statement (adjust the database name as needed):
 
 ```sql
 CREATE DATABASE IF NOT EXISTS helpspot_db 
