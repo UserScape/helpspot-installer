@@ -31,10 +31,10 @@ GRANT ALL PRIVILEGES on helpspot_db.* TO 'helpspot_user'@'localhost';
 
 > **Useful Tools:**
 >
-> Two optional scripts are available to help install Nginx, PHP and MySQL on a ***new*** server for Debian/Ubuntu or RedHat/CentOS servers. You can run these scripts directly on a new server, or use them as a reference on setting up a new server. However please review them to ensure they're correct for your version and flavor of GNU/Linux before running them.
+> Two optional scripts are available to help install Nginx, PHP and MySQL on a ***new*** server for Debian/Ubuntu or RedHat servers. You can run these scripts directly on a new server, or use them as a reference on setting up a new server. However please review them to ensure they're correct for your version and flavor of GNU/Linux before running them.
 >
 > 1. Debian/Ubuntu: [server_deb.sh](https://install.helpspot.com/server_deb.sh)
-> 2. RedHat/CentOS: [server_rpm.sh](https://install.helpspot.com/server_rpm.sh)
+> 2. RedHat: [server_rpm.sh](https://install.helpspot.com/server_rpm.sh)
 
 ### 2. Download Script
 
@@ -93,7 +93,7 @@ This installation script has been tested on:
 6. ![ubuntu](https://s3.amazonaws.com/helpspot-assets/os-ubuntu.png) Ubuntu 14.04
 7. ![ubuntu](https://s3.amazonaws.com/helpspot-assets/os-ubuntu.png) Ubuntu 16.04
 
-<sup>†</sup> Requires non-standard packages to install [MySQL 5.5+](http://www.tecmint.com/install-latest-mysql-on-rhel-centos-and-fedora/) and [PHP 5.6+](https://webtatic.com/packages/php56/)
+<sup>†</sup> Requires non-standard packages to install [MySQL 5.6+](http://www.tecmint.com/install-latest-mysql-on-rhel-centos-and-fedora/) and [PHP 5.6+](https://webtatic.com/packages/php56/)
 
 ## Issues
 
